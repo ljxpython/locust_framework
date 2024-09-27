@@ -1,0 +1,27 @@
+default:
+  log_level: "DEBUG"
+
+boe:
+  DB:
+    host: localhost
+    password: boe
+    port: 3306
+    user: root
+    database: boe
+
+
+online:
+  log_level: "DEBUG"
+  DB:
+    host: online_ip
+    password: xxxxxxx
+    port: 3306
+    user: test_user
+    database: test_user
+  redis:
+    host: online_ip
+    port: 6379
+    db: 1
+    password: testljx
+  node: product
+  port: 5001
