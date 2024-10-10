@@ -1,6 +1,10 @@
 """
      该库比Python的原始日志好用，故使用该库进行日志的封装
      官方文档： https://github.com/Delgan/loguru
+     可能你也想知道原生的python logging模块怎么使用,我们可以看logging的官方文档学习
+     https://docs.python.org/3/library/logging.config.html
+     当然,如果你想看一个简易的文档,可以参考我当时查阅的这份资料
+     https://www.cnblogs.com/nancyzhu/p/8551506.html
 
      使用说明：
      *****
@@ -16,6 +20,7 @@
           error.log 日志中记录较为关键的崩溃及失败信息，信息包括但不限于以下：调用链路的logID，错误的case名称及错误的相关原因
 """
 
+import logging
 import os
 import sys
 from datetime import datetime
@@ -43,6 +48,11 @@ if not os.path.exists(LOG_PATH):
 # logger.add(os.path.join(LOG_PATH,"test2.log"),level=["DEBUG","WARNING"],filter=lambda x: "INFO" in str(x["level"]).upper())
 
 
+class PropagateHandler(logging.Handler):
+    def emit(self, record: logging.LogRecord) -> None:
+        logging.getLogger(record.name).handle(record)
+
+
 ## 封装成类
 class MyLogger(object):
     now = datetime.now()
@@ -62,17 +72,17 @@ class MyLogger(object):
         self.logger.level(log_level)
         # 创建一个文件处理程序并设置格式
         # 添加控制台输出的格式,sys.stdout为输出到屏幕;关于这些配置还需要自定义请移步官网查看相关参数说明
-        self.logger.add(
-            sys.stdout,
-            level=log_level,
-            format="<green>{time:YYYY-MM-DD HH:mm:ss:sss}</green> | "  # 颜色>时间
-            "{process.name} | "  # 进程名
-            "{thread.name} | "  # 线程名
-            "<cyan>{module}</cyan>.<cyan>{function}</cyan>"  # 模块名.方法名
-            ":<cyan>{line}</cyan> | "  # 行号
-            "<level>{level}</level>: "  # 等级
-            "<level>{message}</level>",  # 日志内容
-        )
+        # self.logger.add(
+        #     sys.stdout,
+        #     level=log_level,
+        #     format="<green>{time:YYYY-MM-DD HH:mm:ss:sss}</green> | "  # 颜色>时间
+        #     "{process.name} | "  # 进程名
+        #     "{thread.name} | "  # 线程名
+        #     "<cyan>{module}</cyan>.<cyan>{function}</cyan>"  # 模块名.方法名
+        #     ":<cyan>{line}</cyan> | "  # 行号
+        #     "<level>{level}</level>: "  # 等级
+        #     "<level>{message}</level>",  # 日志内容
+        # )
         # 输出到文件的格式,注释下面的add',则关闭日志写入
         self.logger.add(
             log_test_path,
@@ -85,6 +95,9 @@ class MyLogger(object):
             retention="10 days",
             encoding="utf-8",
         )
+        # 兼容locustUI的方式,可以在locust的webUI界面查看日志详情
+        # 参考: https://github.com/Delgan/loguru?tab=readme-ov-file#suitable-for-scripts-and-libraries
+        self.logger.add(PropagateHandler(), format="{message}")
 
     def get_logger(self):
         return self.logger

@@ -1,5 +1,36 @@
+"""
+自定义事务指标统计
+Example of a manual_report() function that can be used either as a context manager
+(with statement), or a decorator, to manually add entries to Locust's statistics.
+
+Usage as a context manager:
+
+    with manual_report("stats entry name"):
+        # Run time of this block will be reported under a stats entry called "stats entry name"
+        # do stuff here, if an Exception is raised, it'll be reported as a failure
+
+Usage as a decorator:
+
+    @task
+    @manual_report
+    def my_task(self):
+       # The run time of this task will be reported under a stats entry called "my task" (type "Transaction").
+       # If an Exception is raised, it'll be reported as a failure
+
+
+Useage measure:
+
+    start_time = time.time()
+    # do stuff here
+    measure("my task", start_time)
+    # or with  exception
+    measure("my task", start_time, ex)
+"""
+
 import time
+from contextlib import contextmanager
 from enum import Enum
+from typing import Callable
 
 from locust import events
 
@@ -54,3 +85,26 @@ def measure(
         if exception:
             request_meta["name"] = name + "[FAILURE]"
         events.request.fire(**request_meta)
+
+
+@contextmanager
+def manual_report(name: str, strategy: ReportStrategy = ReportStrategy.ALL):
+    start_time = time.time()
+    exception = None
+    try:
+        yield
+    except Exception as ex:  # pylint: disable=broad-exception-caught
+        # 已知问题: 如果在方法内使用了 ResponseContextManager 且调用了 response.success() 或者 response.failure() 或者抛出了 Response 异常
+        # ResponseContextManager 会处理异常，并不会传递出来，导致无法识别到失败，被统计为成功。
+        # 例如:
+        # with self.client.get(f"/get", catch_response=True) as resp:
+        #   if resp.status >= 400:
+        #       resp.failure(f"{resp.status=}")
+        #       raise ResponseError(f"ERROR {resp.status=}")
+        # 解决： 要正确统计，需要避免使用 ResponseContextManager 或者抛出非 ResponseError 异常
+        exception = ex
+        raise
+    finally:
+        measure(
+            name=name, start_time=start_time, exception=exception, strategy=strategy
+        )
