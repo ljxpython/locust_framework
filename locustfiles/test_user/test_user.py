@@ -1,3 +1,10 @@
+"""
+
+压测user的模块,场景为用户登录\浏览一个网页\退出这一场景
+
+
+"""
+
 import logging
 import random
 import sys
