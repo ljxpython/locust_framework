@@ -959,6 +959,34 @@ requests = {version = ">=2.32.2", markers = "python_full_version > \"3.11.0\""}
 Werkzeug = ">=2.0.0"
 
 [[package]]
+name = "locust-plugins"
+version = "4.5.3"
+description = "Useful plugins/extensions for Locust"
+optional = false
+python-versions = "<4,>=3.8"
+files = [
+    {file = "locust_plugins-4.5.3-py3-none-any.whl", hash = "sha256:585faff85fc8517103d36b6603db75fb5dcea724e77efc8daec5f873767f6bbd"},
+    {file = "locust_plugins-4.5.3.tar.gz", hash = "sha256:99e6301178f5a58ac2ce447971b4773c017259540e4a22e92108e71e86ca31c5"},
+]
+
+[package.dependencies]
+locust = ">=2.20.0"
+typing-extensions = "*"
+
+[package.extras]
+all = ["boto3", "confluent-kafka", "lxml", "opencensus-ext-azure", "paho-mqtt (>=2.1.0)", "playwright (>=1.40.0)", "psycogreen", "psycopg2-binary", "pymongo", "websocket-client"]
+appinsights = ["opencensus-ext-azure"]
+boto3 = ["boto3"]
+dashboards = ["psycogreen", "psycopg2-binary"]
+kafka = ["confluent-kafka"]
+mongo = ["pymongo"]
+mqtt = ["paho-mqtt (>=2.1.0)"]
+playwright = ["playwright (>=1.40.0)"]
+resource = ["lxml"]
+webdriver = ["selenium (>=4.0.0)"]
+websocket = ["websocket-client"]
+
+[[package]]
 name = "loguru"
 version = "0.7.2"
 description = "Python logging made (stupidly) simple"
@@ -1304,6 +1332,16 @@ python-versions = ">=3.8"
 files = [
     {file = "pathspec-0.12.1-py3-none-any.whl", hash = "sha256:a0d503e138a4c123b27490a4f7beda6a01c6f288df0e4a8b79c7eb0dc7b4cc08"},
     {file = "pathspec-0.12.1.tar.gz", hash = "sha256:a482d51503a1ab33b1c67a6c3813a26953dbdc71c31dacaef9a838c4e29f5712"},
+]
+
+[[package]]
+name = "peewee"
+version = "3.17.6"
+description = "a little orm"
+optional = false
+python-versions = "*"
+files = [
+    {file = "peewee-3.17.6.tar.gz", hash = "sha256:cea5592c6f4da1592b7cff8eaf655be6648a1f5857469e30037bf920c03fb8fb"},
 ]
 
 [[package]]
@@ -1811,6 +1849,17 @@ files = [
 ]
 
 [[package]]
+name = "typing-extensions"
+version = "4.12.2"
+description = "Backported and Experimental Type Hints for Python 3.8+"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "typing_extensions-4.12.2-py3-none-any.whl", hash = "sha256:04e5ca0351e0f3f85c6853954072df659d0d13fac324d0072316b67d7794700d"},
+    {file = "typing_extensions-4.12.2.tar.gz", hash = "sha256:1a7ead55c7e559dd4dee8856e3a88b41225abfe1ce8df57b7c13915fe121ffb8"},
+]
+
+[[package]]
 name = "tzdata"
 version = "2024.2"
 description = "Provider of IANA time zone data"
@@ -1961,4 +2010,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "c534628dbd56d3f5e0cac03a8faa537d5db727ab45ef6e63afa09ddf6c6e8cd1"
+content-hash = "2b3111b43b145eeacdfa22cd03e969a033652fb44130d267198eb2b64ef69225"

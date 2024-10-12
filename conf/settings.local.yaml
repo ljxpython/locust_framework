@@ -1,27 +1,60 @@
-default:
-  log_level: "DEBUG"
 
 boe:
+
   DB:
-    host: localhost
-    password: boe
+    host: 101.200.146.122
+    password: YsmFmXziiaGNKr5i
     port: 3306
-    user: root
-    database: boe
+    user: test_plant
+    database: test_plant
+  redis:
+    host: 101.200.146.122
+    port: 6379
+    db: 1
+    password: testljx
+  python:
+    path: /Users/lijiaxin/PycharmProject/my_best/flask_plant_srv/.venv/bin/python
+    pytest_path: /Users/lijiaxin/PycharmProject/my_best/flask_plant_srv/.venv/bin/pytest # pytest脚本所在路径
+  test:
+    test_env: boe # 暂时未用上
+    base_dir: /Users/lijiaxin/PycharmProject/my_best/pytest_framework # 执行pytest脚本的根目录
+    python_env: /Users/lijiaxin/PycharmProject/my_best/pytest_framework/.venv/bin/python
+    report_dir: /Users/lijiaxin/PycharmProject/my_best/pytest_framework/reports
+    webhook_key: 6a3d0c9b-6d8b-4b7e-9c9c-8d8d8d8d8d8d
+    webhook_plan: 商品接口测试环境自动化定时任务
+  locust_stress:
+    test_env: boe # 暂时未用上
+    host: 127.0.0.1:5001
+    locust_env: /Users/lijiaxin/PycharmProject/my_best/locust_framework/.venv/bin/locust
+    base_dir: /Users/lijiaxin/PycharmProject/my_best/locust_framework
+    python_env: /Users/lijiaxin/PycharmProject/my_best/locust_framework/.venv/bin/python
+    report_dir: /Users/lijiaxin/PycharmProject/my_best/locust_framework/reports
+  node: product
+  port: 5001
+  log_level: INFO
 
 
 online:
-  log_level: "DEBUG"
   DB:
-    host: online_ip
-    password: xxxxxxx
+    host: 101.200.146.122
+    password: AAdwzcL7jh2TD8B8
     port: 3306
-    user: test_user
-    database: test_user
+    user: test_plant_online
+    database: test_plant_online
   redis:
-    host: online_ip
+    host: 101.200.146.122
     port: 6379
     db: 1
     password: testljx
   node: product
   port: 5001
+  python:
+    path: /Users/lijiaxin/PycharmProject/my_best/flask_plant_srv/.venv/bin/python
+    pytest_path: /Users/lijiaxin/PycharmProject/my_best/flask_plant_srv/.venv/bin/pytest # pytest脚本所在路径
+  test:
+    test_env: online # 暂时未用上
+    base_dir: /my_best/servers/pytest_framework # 执行pytest脚本的根目录
+    python_env: /root/myenv/py12/bin/python
+    report_dir: /my_best/file/reports
+    webhook_key: 6a3d0c9b-6d8b-4b7e-9c9c-8d8d8d8d8d8d
+    webhook_plan: 商品接口测试环境自动化定时任务

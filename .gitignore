@@ -177,3 +177,6 @@ pyrightconfig.json
 
 /logs
 .idea/
+
+nohup.out
+reports
