@@ -34,6 +34,7 @@ locust = "^2.31.7"
 humps = "^0.2.2"
 locust-plugins = "^4.5.3"
 peewee = "^3.17.6"
+pymysql = "^1.1.1"
 
 
 [build-system]

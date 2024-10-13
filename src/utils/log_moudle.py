@@ -60,7 +60,7 @@ class MyLogger(object):
 
     def __init__(
         self,
-        log_test_path=os.path.join(LOG_PATH, formatted_time + ".log"),
+        log_test_path=os.path.join(LOG_PATH, "test.log"),
         log_error_path=os.path.join(LOG_PATH, "error.log"),
         log_warn_path=os.path.join(LOG_PATH, "debug.log"),
         log_level="INFO",

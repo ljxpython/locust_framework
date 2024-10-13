@@ -1,6 +1,5 @@
 
 boe:
-
   DB:
     host: 101.200.146.122
     password: YsmFmXziiaGNKr5i
@@ -12,6 +11,11 @@ boe:
     port: 6379
     db: 1
     password: testljx
+  nginx:
+    host: https://www.coder-ljx.cn
+    locust_static_dir: /Users/lijiaxin/PycharmProject/my_best/locust_framework/reports
+    pytest_static_dir: /Users/lijiaxin/PycharmProject/my_best/pytest_framework/reports
+    static_url: https://www.coder-ljx.cn:8080
   python:
     path: /Users/lijiaxin/PycharmProject/my_best/flask_plant_srv/.venv/bin/python
     pytest_path: /Users/lijiaxin/PycharmProject/my_best/flask_plant_srv/.venv/bin/pytest # pytest脚本所在路径
@@ -19,7 +23,7 @@ boe:
     test_env: boe # 暂时未用上
     base_dir: /Users/lijiaxin/PycharmProject/my_best/pytest_framework # 执行pytest脚本的根目录
     python_env: /Users/lijiaxin/PycharmProject/my_best/pytest_framework/.venv/bin/python
-    report_dir: /Users/lijiaxin/PycharmProject/my_best/pytest_framework/reports
+    report_dir: /Users/lijiaxin/PycharmProject/my_best/pytest_framework/reports/openapi_reports
     webhook_key: 6a3d0c9b-6d8b-4b7e-9c9c-8d8d8d8d8d8d
     webhook_plan: 商品接口测试环境自动化定时任务
   locust_stress:
@@ -28,7 +32,8 @@ boe:
     locust_env: /Users/lijiaxin/PycharmProject/my_best/locust_framework/.venv/bin/locust
     base_dir: /Users/lijiaxin/PycharmProject/my_best/locust_framework
     python_env: /Users/lijiaxin/PycharmProject/my_best/locust_framework/.venv/bin/python
-    report_dir: /Users/lijiaxin/PycharmProject/my_best/locust_framework/reports
+    report_dir: /Users/lijiaxin/PycharmProject/my_best/locust_framework/reports/locust_reports
+    locust_url: http://127.0.0.1
   node: product
   port: 5001
   log_level: INFO
@@ -46,8 +51,12 @@ online:
     port: 6379
     db: 1
     password: testljx
+  nginx:
+    static_dir: /my_best/file/reports
+    static_url: https://www.coder-ljx.cn:8080
   node: product
   port: 5001
+  log_level: INFO
   python:
     path: /Users/lijiaxin/PycharmProject/my_best/flask_plant_srv/.venv/bin/python
     pytest_path: /Users/lijiaxin/PycharmProject/my_best/flask_plant_srv/.venv/bin/pytest # pytest脚本所在路径

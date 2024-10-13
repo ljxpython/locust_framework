@@ -60,7 +60,7 @@ class LocustSuite(BaseModel):
 
 class LocustTestResult(BaseModel):
     # 标题
-    title = CharField(max_length=100, null=True, verbose_name="测试报告标题")
+    title = CharField(max_length=100, null=True, verbose_name="测试报告标题",unique=True)
     # 外键 suite_name
     locustsuite = ForeignKeyField(LocustSuite, verbose_name="suite_name")
     # 运行的状态 0 代表运行中 1 代表流程结束
@@ -85,6 +85,24 @@ class LocustTestResult(BaseModel):
     task_id = CharField(max_length=100, null=True, verbose_name="任务id")
     # shape_name
     shape_name = CharField(max_length=100, null=True, verbose_name="shape_name")
+    # port locust启动的端口
+    port = IntegerField(null=True, default=8090,verbose_name="locust启动的端口")
+    # headless 是否是无头模式
+    headless = BooleanField(null=True, verbose_name="是否是无头模式",default=False)
+    # 是否是分布式
+    distributed = BooleanField(null=True, verbose_name="是否是分布式",default=False)
+    # 分布式节点
+    nodes = TextField(null=True, verbose_name="分布式节点")
+    # 增速
+    spawn_rate = FloatField(null=True, verbose_name="spawn-rate")
+    # 并发数
+    users = IntegerField(null=True, verbose_name="users")
+    # 标签
+    tags = CharField(max_length=100, null=True, verbose_name="标签")
+    exclude_tags = CharField(max_length=100, null=True, verbose_name="排除标签")
+    run_time = CharField(max_length=100, null=True, verbose_name="运行时间")
+
+
 
 
 if __name__ == "__main__":
