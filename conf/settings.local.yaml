@@ -29,10 +29,16 @@ boe:
   locust_stress:
     test_env: boe # 暂时未用上
     host: 127.0.0.1:5001
-    locust_env: /Users/lijiaxin/PycharmProject/my_best/locust_framework/.venv/bin/locust
-    base_dir: /Users/lijiaxin/PycharmProject/my_best/locust_framework
-    python_env: /Users/lijiaxin/PycharmProject/my_best/locust_framework/.venv/bin/python
-    report_dir: /Users/lijiaxin/PycharmProject/my_best/locust_framework/reports/locust_reports
+    base_dir: /Users/bytedance/PycharmProjects/my_best/locust_framework
+    python_env: /Users/bytedance/PycharmProjects/my_best/locust_framework/.venv/bin/python
+    report_dir: /Users/bytedance/PycharmProjects/my_best/locust_framework/reports
+    #    base_dir: ~/PycharmProjects/my_best/locust_framework
+    #    python_env: ~/PycharmProjects/my_best/locust_framework/.venv/bin/python
+    #    report_dir: ~/PycharmProjects/my_best/locust_framework/reports
+    locust_env: /Users/bytedance/PycharmProjects/my_best/locust_framework/.venv/bin/locust
+    #    base_dir: /Users/lijiaxin/PycharmProject/my_best/locust_framework
+    #    python_env: /Users/lijiaxin/PycharmProject/my_best/locust_framework/.venv/bin/python
+    #    report_dir: /Users/lijiaxin/PycharmProject/my_best/locust_framework/reports/locust_reports
     locust_url: http://127.0.0.1
   node: product
   port: 5001
