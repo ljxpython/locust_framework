@@ -180,3 +180,4 @@ pyrightconfig.json
 
 nohup.out
 reports
+conf/settings.local.yaml

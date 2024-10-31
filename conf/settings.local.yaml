@@ -35,7 +35,7 @@ boe:
     #    base_dir: ~/PycharmProjects/my_best/locust_framework
     #    python_env: ~/PycharmProjects/my_best/locust_framework/.venv/bin/python
     #    report_dir: ~/PycharmProjects/my_best/locust_framework/reports
-    locust_env: /Users/bytedance/PycharmProjects/my_best/locust_framework/.venv/bin/locust
+    locust_env: /Users/lijiaxin/PycharmProject/my_best/locust_framework/.venv/bin/locust
     #    base_dir: /Users/lijiaxin/PycharmProject/my_best/locust_framework
     #    python_env: /Users/lijiaxin/PycharmProject/my_best/locust_framework/.venv/bin/python
     #    report_dir: /Users/lijiaxin/PycharmProject/my_best/locust_framework/reports/locust_reports
