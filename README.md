@@ -35,11 +35,6 @@
 
 ```
 
-```bash
-locust -f locustfiles --class-picker
-```
-
-
 
 
 
