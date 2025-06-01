@@ -323,4 +323,5 @@ class WebsiteUser(HttpUser):
 
 个人微信号
 
-![image-20250531212549739](./assets/image-20250531212549739.png)
+
+<img src="./assets/image-20250531212549739.png" alt="Description" width="300"/>
