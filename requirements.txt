@@ -1073,3 +1073,13 @@ zope-interface==7.0.3 ; python_version >= "3.12" and python_version < "4.0" \
     --hash=sha256:db6237e8fa91ea4f34d7e2d16d74741187e9105a63bbb5686c61fea04cdbacca \
     --hash=sha256:ecd32f30f40bfd8511b17666895831a51b532e93fc106bfa97f366589d3e4e0e \
     --hash=sha256:f418c88f09c3ba159b95a9d1cfcdbe58f208443abb1f3109f4b9b12fd60b187c
+
+peewee
+humps
+requests
+loguru
+gevent
+locust
+jmespath
+dynaconf
+click

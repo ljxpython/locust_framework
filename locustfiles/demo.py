@@ -6,6 +6,7 @@ from datetime import datetime
 from locust import HttpUser, between, events, run_single_user, task
 from locust.runners import WorkerRunner
 
+from src.utils.locust_report import manual_report, measure
 from src.utils.rendezvous import Rendezvous
 
 num = 0
@@ -91,16 +92,22 @@ class WebsiteUser(HttpUser):
         print(f"loop_num:{loop_num}")
         print(f"is_rendezvous:{self.environment.parsed_options.is_rendezvous}")
         print(type(self.environment.parsed_options.is_rendezvous))
+        with manual_report("my_task"):
+            time.sleep(1)
+        # 使用measure更加灵活
+        # measure(name="order", start_time=start_time,end_time=status['time'],exception=LocustError(f"host_id: {host} 订购失败"))
         if self.environment.parsed_options.is_rendezvous:
             with self.environment.shared:
-                print("reve" + "*" * 10)
+                with manual_report("my_task"):
+                    time.sleep(1)
         if loop_num < num:
             self.environment.runner.quit()  # 强制停止所有虚拟用户
 
-            # print(f"my_argument={self.environment.parsed_options.my_argument}")
-            # print(f"my_ui_invisible_argument={self.environment.parsed_options.my_ui_invisible_argument}")
-        # asyncio.sleep(10)
-        # time.sleep(10)
+            print(f"my_argument={self.environment.parsed_options.my_argument}")
+            print(
+                f"my_ui_invisible_argument={self.environment.parsed_options.my_ui_invisible_argument}"
+            )
+        time.sleep(1)
 
 
 if __name__ == "__main__":

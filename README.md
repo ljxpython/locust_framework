@@ -7,11 +7,12 @@
 > 1. 集合点
 > 2. 自定义事务
 > 3. 自定义参数
-> 4. 压测报告优化
-> 5. 优雅的停止压测
-> 6. 第三方调用(该框架已经接入到作者自己开发的测试平台中)
-> 7. 自动告警(支持邮件\飞书\钉钉群等消息上报)
-> 8. 一些其他小的优化项
+> 4. 测试数据的动态获取及编排(可支持分布式的资源编排)
+> 5. 压测报告优化
+> 6. 优雅的停止压测
+> 7. 第三方调用(该框架已经接入到作者自己开发的测试平台中)
+> 8. 自动告警(支持邮件\飞书\钉钉群等消息上报)
+> 9. 一些其他小的优化项
 
 
 
@@ -21,17 +22,61 @@
 
 文件结构如下：
 ```bash
-├── src/
-│   ├── some_file.py
-├── locustfiles/
-│   ├── locustfile1.py
-│   ├── locustfile2.py
-│   └── more_files/
-│       ├── locustfile3.py
-│       ├── _ignoreme.py
-│   └── shape_classes/
-│       ├── DoubleWaveShape.py
-│       ├── StagesShape.py
+.
+├── README.md
+├── conf
+│   ├── config.py
+│   ├── constants.py
+│   ├── settings.local.yaml
+│   └── settings.yaml
+├── docs
+│   └── pics
+│       └── img.png
+├── locustfiles
+│   ├── demo.py
+│   ├── shape_classes
+│   │   └── __init__.py
+│   ├── test.py
+│   ├── test_demo
+│   │   └── test_good.py
+│   └── test_user
+│       ├── __init__.py
+│       ├── __pycache__
+│       │   └── test_user.cpython-312.pyc
+│       └── test_user.py
+├── logs
+│   └── test.log
+├── main.py
+├── poetry.lock
+├── pyproject.toml
+├── reports
+├── requirements.txt
+├── src
+│   ├── client
+│   │   ├── __init__.py
+│   │   └── demo_client
+│   │       ├── flask_auth.py
+│   │       ├── flask_client.py
+│   │       └── response.py
+│   ├── model
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── locust_test.cpython-312.pyc
+│   │   │   └── modelsbase.cpython-312.pyc
+│   │   ├── auto_pytest.py
+│   │   ├── locust_test.py
+│   │   └── modelsbase.py
+│   └── utils
+│       ├── __init__.py
+│       ├── file_operation.py
+│       ├── locust_report.py
+│       ├── log_moudle.py
+│       ├── rendezvous.py
+│       ├── robot.py
+│       └── util.py
+├── stop_locust.py
+└── stop_locust.sh
+
 
 ```
 
@@ -230,11 +275,60 @@ locust -f - --worker --processes 1  --master-host 127.0.0.1
 
 这里只提到了如何运行分布式压测,但是对于分布式压测变量如何管理,数据如何分配,因为篇幅太长,我并没有做介绍,感兴趣的可以查阅我博客的相关章节
 
+## 自定义场景编写
 
+不需要考虑并发应该如何设计,只需要考虑单个user的代码逻辑编排,可以像接口测试一样,只关注接口的参数化\接口间关联传参\断言的处理
+
+接口一般有同步接口和异步接口,对于异步接口,封装了轮训功能,可以定期轮训查询异步完成的功能
+
+断言部分,支持常用的接口状态断言,响应结果断言,熟悉断言使用的方法后,可大大减轻脚本编写工作者的开发时间
+
+
+
+## 自定义事务统计
+
+```
+from src.utils.locust_report import manual_report, measure
+
+class WebsiteUser(HttpUser):
+    host = "127.0.0.1"
+
+    @task
+    def my_task(self):
+        with manual_report("my_task"):
+            time.sleep(1)
+        # 如果使用measure,需自定义实现开始及结束时间及exception
+        measure(name="order", start_time=start_time,end_time=status['time'],exception=LocustError(f"host_id: {host} 订购失败"))
+
+```
+
+统计结果如下
+
+![image-20250601103425608](./assets/image-20250601103425608.png)
+
+HTML报告统计结果相同:
+
+![image-20250601103515708](./assets/image-20250601103515708.png)
+
+
+
+
+
+![image-20250601103247786](./assets/image-20250601103247786.png)
+
+
+
+## 自定义压测策略
+
+有时候我们希望的压测的模型不是先升然后平稳的运行,而是升降突然拉升等等一些模型的设计,在`locustfiles/shape_classes`目录下,封装几种场景的场景,也可以基于该场景进行二次开发
+
+如何调用:在脚本中继承`locustfiles/shape_classes`下的相关类,在传参时加入`--class-picker`参数来选择要使用的形状即可
 
 
 
 ## 集合点如何使用
+
+集合点:当需要指定事务同时执行时,需要使用集合点的功能,locust本身未提供需使用协程的信号量进行二次封装,支持参数指定或者动态指定集合数在集合点并发执行事务的功能
 
 如下是一个简单的demo
 
@@ -278,6 +372,12 @@ class WebsiteUser(HttpUser):
 如果第三方接入,实现`main.py`中的`run_test()`方式,则测试报告格式如下:
 
 ![image-20250531211606483](./assets/image-20250531211606483.png)
+
+## 测试数据的动态获取及编排(可支持分布式的资源编排)
+
+这里说一下思路: 复杂的可以使用中间件,类似于Redis这些进行资源管理,简单的可以使用locust的原生`send_message`方法实现
+
+既支持csv文件指定,也支持测试时,在前置准备环境生成测试数据,且动态分配给指定的user使用
 
 
 
