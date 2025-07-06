@@ -1,0 +1,130 @@
+{
+  "enabled_plugins": [
+    "csv_report_plugin"
+  ],
+  "plugin_configs": {
+    "csv_report_plugin": {
+      "output_directory": "reports/csv",
+      "include_summary": true,
+      "include_requests": true,
+      "include_errors": true,
+      "timestamp_format": "%Y%m%d_%H%M%S"
+    },
+    "performance_analyzer": {
+      "response_time_thresholds": {
+        "excellent": 500,
+        "good": 1000,
+        "acceptable": 2000,
+        "poor": 5000
+      },
+      "throughput_thresholds": {
+        "excellent": 1000,
+        "good": 500,
+        "acceptable": 100,
+        "poor": 50
+      },
+      "error_rate_thresholds": {
+        "excellent": 0.1,
+        "good": 1.0,
+        "acceptable": 5.0,
+        "poor": 10.0
+      }
+    },
+    "performance_monitor": {
+      "monitoring_interval": 5,
+      "alert_rules": [
+        {
+          "name": "high_response_time",
+          "metric": "avg_response_time",
+          "threshold": 2000,
+          "operator": ">",
+          "severity": "warning",
+          "enabled": true
+        },
+        {
+          "name": "high_error_rate",
+          "metric": "error_rate",
+          "threshold": 5.0,
+          "operator": ">",
+          "severity": "critical",
+          "enabled": true
+        },
+        {
+          "name": "low_throughput",
+          "metric": "current_rps",
+          "threshold": 10,
+          "operator": "<",
+          "severity": "warning",
+          "enabled": true
+        }
+      ]
+    },
+    "notification_service": {
+      "channels": {
+        "feishu": {
+          "webhook_url": "https://open.feishu.cn/open-apis/bot/v2/hook/your-webhook-url",
+          "enabled": false
+        },
+        "dingtalk": {
+          "webhook_url": "https://oapi.dingtalk.com/robot/send?access_token=your-token",
+          "secret": "your-secret",
+          "enabled": false
+        },
+        "email": {
+          "smtp_server": "smtp.example.com",
+          "smtp_port": 587,
+          "username": "your-email@example.com",
+          "password": "your-password",
+          "from_email": "your-email@example.com",
+          "to_emails": ["admin@example.com"],
+          "enabled": false
+        },
+        "wechat_work": {
+          "webhook_url": "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=your-key",
+          "enabled": false
+        }
+      },
+      "message_templates": {
+        "alert": {
+          "title": "性能测试告警",
+          "format": "markdown"
+        },
+        "report": {
+          "title": "性能测试报告",
+          "format": "markdown"
+        }
+      }
+    },
+    "data_generator": {
+      "locale": "zh_CN",
+      "batch_size": 1000,
+      "cache_enabled": true,
+      "custom_providers": {}
+    },
+    "data_provider": {
+      "default_strategy": "round_robin",
+      "cache_size": 10000,
+      "auto_reload": true,
+      "data_sources": {
+        "users": {
+          "type": "file",
+          "path": "data/users.json",
+          "format": "json"
+        },
+        "products": {
+          "type": "file",
+          "path": "data/products.csv",
+          "format": "csv"
+        }
+      }
+    },
+    "data_distributor": {
+      "node_id": null,
+      "is_master": true,
+      "master_host": "localhost",
+      "master_port": 8089,
+      "sync_interval": 30,
+      "auto_sync": false
+    }
+  }
+}

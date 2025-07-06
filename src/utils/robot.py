@@ -1,20 +1,247 @@
 """
-飞书或者其他的消息
+多渠道消息通知服务
 
+支持飞书、钉钉、邮件、企业微信等多种通知方式
 """
 
 import json
+import smtplib
+from abc import ABC, abstractmethod
+from email.mime.multipart import MimeMultipart
+from email.mime.text import MimeText
+from typing import Dict, List, Optional
 
 import requests
 
-custom_robot_url = "this is web hook url"
+from conf.config import settings
+from src.utils.log_moudle import logger
 
-data = '{"msg_type":"text","content":{"text":"request example"}}'
 
-headers = {
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36",
-    "Content-Type": "application/json; charset=utf-8",
-}
+class NotificationChannel(ABC):
+    """通知渠道抽象基类"""
+
+    @abstractmethod
+    def send_message(self, message: str, **kwargs) -> bool:
+        """发送消息"""
+        pass
+
+
+class FeishuNotification(NotificationChannel):
+    """飞书通知"""
+
+    def __init__(self, webhook_url: str):
+        self.webhook_url = webhook_url
+        self.headers = {
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36",
+            "Content-Type": "application/json; charset=utf-8",
+        }
+
+    def send_message(self, message: str, msg_type: str = "text", **kwargs) -> bool:
+        """发送飞书消息"""
+        try:
+            if msg_type == "text":
+                data = {"msg_type": "text", "content": {"text": message}}
+            elif msg_type == "card":
+                data = self._build_card_message(message, **kwargs)
+            else:
+                data = {"msg_type": "text", "content": {"text": message}}
+
+            response = requests.post(
+                self.webhook_url,
+                headers=self.headers,
+                data=json.dumps(data, ensure_ascii=False).encode("utf-8"),
+                timeout=10,
+            )
+
+            if response.status_code == 200:
+                logger.info("飞书消息发送成功")
+                return True
+            else:
+                logger.error(
+                    f"飞书消息发送失败: {response.status_code} - {response.text}"
+                )
+                return False
+
+        except Exception as e:
+            logger.error(f"发送飞书消息异常: {e}")
+            return False
+
+    def _build_card_message(self, message: str, **kwargs) -> Dict:
+        """构建卡片消息"""
+        card_data = {
+            "msg_type": "interactive",
+            "card": {
+                "elements": [
+                    {"tag": "div", "text": {"content": message, "tag": "lark_md"}}
+                ],
+                "header": {
+                    "title": {
+                        "content": kwargs.get("title", "性能测试通知"),
+                        "tag": "plain_text",
+                    }
+                },
+            },
+        }
+
+        # 添加额外字段
+        if kwargs.get("fields"):
+            for field in kwargs["fields"]:
+                card_data["card"]["elements"].append({"tag": "div", "fields": field})
+
+        return card_data
+
+
+class DingTalkNotification(NotificationChannel):
+    """钉钉通知"""
+
+    def __init__(self, webhook_url: str, secret: str = None):
+        self.webhook_url = webhook_url
+        self.secret = secret
+        self.headers = {"Content-Type": "application/json; charset=utf-8"}
+
+    def send_message(self, message: str, msg_type: str = "text", **kwargs) -> bool:
+        """发送钉钉消息"""
+        try:
+            if msg_type == "text":
+                data = {"msgtype": "text", "text": {"content": message}}
+            elif msg_type == "markdown":
+                data = {
+                    "msgtype": "markdown",
+                    "markdown": {
+                        "title": kwargs.get("title", "性能测试通知"),
+                        "text": message,
+                    },
+                }
+            else:
+                data = {"msgtype": "text", "text": {"content": message}}
+
+            # 添加@功能
+            if kwargs.get("at_mobiles") or kwargs.get("at_all"):
+                data["at"] = {
+                    "atMobiles": kwargs.get("at_mobiles", []),
+                    "isAtAll": kwargs.get("at_all", False),
+                }
+
+            response = requests.post(
+                self.webhook_url,
+                headers=self.headers,
+                data=json.dumps(data, ensure_ascii=False).encode("utf-8"),
+                timeout=10,
+            )
+
+            if response.status_code == 200:
+                result = response.json()
+                if result.get("errcode") == 0:
+                    logger.info("钉钉消息发送成功")
+                    return True
+                else:
+                    logger.error(f"钉钉消息发送失败: {result}")
+                    return False
+            else:
+                logger.error(f"钉钉消息发送失败: {response.status_code}")
+                return False
+
+        except Exception as e:
+            logger.error(f"发送钉钉消息异常: {e}")
+            return False
+
+
+class EmailNotification(NotificationChannel):
+    """邮件通知"""
+
+    def __init__(
+        self,
+        smtp_server: str,
+        smtp_port: int,
+        username: str,
+        password: str,
+        use_tls: bool = True,
+    ):
+        self.smtp_server = smtp_server
+        self.smtp_port = smtp_port
+        self.username = username
+        self.password = password
+        self.use_tls = use_tls
+
+    def send_message(
+        self,
+        message: str,
+        subject: str = "性能测试通知",
+        to_emails: List[str] = None,
+        **kwargs,
+    ) -> bool:
+        """发送邮件"""
+        if not to_emails:
+            logger.warning("未指定收件人邮箱")
+            return False
+
+        try:
+            # 创建邮件对象
+            msg = MimeMultipart()
+            msg["From"] = self.username
+            msg["To"] = ", ".join(to_emails)
+            msg["Subject"] = subject
+
+            # 添加邮件正文
+            if kwargs.get("html", False):
+                msg.attach(MimeText(message, "html", "utf-8"))
+            else:
+                msg.attach(MimeText(message, "plain", "utf-8"))
+
+            # 连接SMTP服务器并发送
+            with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
+                if self.use_tls:
+                    server.starttls()
+                server.login(self.username, self.password)
+                server.send_message(msg)
+
+            logger.info(f"邮件发送成功，收件人: {to_emails}")
+            return True
+
+        except Exception as e:
+            logger.error(f"发送邮件异常: {e}")
+            return False
+
+
+class WeChatWorkNotification(NotificationChannel):
+    """企业微信通知"""
+
+    def __init__(self, webhook_url: str):
+        self.webhook_url = webhook_url
+        self.headers = {"Content-Type": "application/json; charset=utf-8"}
+
+    def send_message(self, message: str, msg_type: str = "text", **kwargs) -> bool:
+        """发送企业微信消息"""
+        try:
+            if msg_type == "text":
+                data = {"msgtype": "text", "text": {"content": message}}
+            elif msg_type == "markdown":
+                data = {"msgtype": "markdown", "markdown": {"content": message}}
+            else:
+                data = {"msgtype": "text", "text": {"content": message}}
+
+            response = requests.post(
+                self.webhook_url,
+                headers=self.headers,
+                data=json.dumps(data, ensure_ascii=False).encode("utf-8"),
+                timeout=10,
+            )
+
+            if response.status_code == 200:
+                result = response.json()
+                if result.get("errcode") == 0:
+                    logger.info("企业微信消息发送成功")
+                    return True
+                else:
+                    logger.error(f"企业微信消息发送失败: {result}")
+                    return False
+            else:
+                logger.error(f"企业微信消息发送失败: {response.status_code}")
+                return False
+
+        except Exception as e:
+            logger.error(f"发送企业微信消息异常: {e}")
+            return False
 
 
 ## 普通文本
