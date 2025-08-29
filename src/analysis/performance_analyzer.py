@@ -132,25 +132,197 @@ class PerformanceAnalyzer:
 
         return analysis
 
-    def comprehensive_analysis(self, csv_file_path: str) -> Dict:
-        """综合性能分析"""
-        df = self.load_csv_data(csv_file_path)
+    def comprehensive_analysis(self, test_data: Dict) -> Dict:
+        """综合性能分析 - 符合文档API规范"""
+        # 支持两种输入方式：CSV文件路径或直接的测试数据字典
+        if isinstance(test_data, str):
+            # 兼容旧版本，输入为CSV文件路径
+            df = self.load_csv_data(test_data)
+            data_source = test_data
+        else:
+            # 新版本API，输入为测试数据字典
+            df = self._convert_test_data_to_df(test_data)
+            data_source = test_data.get("test_name", "未知测试")
 
         analysis_result = {
             "timestamp": datetime.now().isoformat(),
-            "data_source": csv_file_path,
+            "test_info": {
+                "test_name": (
+                    test_data.get("test_name", "未知测试")
+                    if isinstance(test_data, dict)
+                    else data_source
+                ),
+                "start_time": (
+                    test_data.get("start_time", "")
+                    if isinstance(test_data, dict)
+                    else ""
+                ),
+                "end_time": (
+                    test_data.get("end_time", "") if isinstance(test_data, dict) else ""
+                ),
+                "duration": (
+                    test_data.get("duration", 0) if isinstance(test_data, dict) else 0
+                ),
+                "users": (
+                    test_data.get("users", 0) if isinstance(test_data, dict) else 0
+                ),
+            },
             "response_time": self.analyze_response_time(df),
             "throughput": self.analyze_throughput(df),
-            "error_rate": self.analyze_error_rate(df),
-            "resource_usage": self.analyze_resource_usage(df),
+            "error_analysis": self.analyze_error_rate(df),
+            "performance_grade": {},
+            "overall_grade": "",
+            "recommendations": [],
         }
 
+        # 计算性能评分
+        analysis_result["performance_grade"] = self.calculate_performance_grade(
+            analysis_result["response_time"],
+            analysis_result["throughput"],
+            analysis_result["error_analysis"],
+        )
+
         # 综合评分
-        analysis_result["overall_grade"] = self._calculate_overall_grade(
+        analysis_result["overall_grade"] = analysis_result["performance_grade"].get(
+            "grade", "D"
+        )
+
+        # 生成优化建议
+        analysis_result["recommendations"] = self._generate_recommendations(
             analysis_result
         )
 
         return analysis_result
+
+    def _convert_test_data_to_df(self, test_data: Dict) -> pd.DataFrame:
+        """将测试数据字典转换为DataFrame"""
+        requests = test_data.get("requests", [])
+
+        # 转换请求数据为DataFrame格式
+        df_data = []
+        for req in requests:
+            df_data.append(
+                {
+                    "Response Time": req.get("response_time", 0),
+                    "Success": req.get("success", True),
+                    "Timestamp": req.get("timestamp", datetime.now().isoformat()),
+                    "Name": req.get("name", "request"),
+                    "Method": req.get("method", "GET"),
+                    "Status Code": 200 if req.get("success", True) else 500,
+                }
+            )
+
+        return pd.DataFrame(df_data) if df_data else pd.DataFrame()
+
+    def calculate_performance_grade(
+        self, response_time_result: Dict, throughput_result: Dict, error_result: Dict
+    ) -> Dict:
+        """计算性能评分 - 符合文档API规范"""
+        # 响应时间得分
+        rt_grade = response_time_result.get("performance_grade", "D")
+        rt_score = self._grade_to_score(rt_grade)
+
+        # 吞吐量得分
+        tp_grade = throughput_result.get("performance_grade", "D")
+        tp_score = self._grade_to_score(tp_grade)
+
+        # 错误率得分
+        er_grade = error_result.get("performance_grade", "D")
+        er_score = self._grade_to_score(er_grade)
+
+        # 稳定性得分 (基于响应时间标准差)
+        std_dev = response_time_result.get("std", 0)
+        mean_rt = response_time_result.get("mean", 0)
+        stability_score = (
+            100 if mean_rt == 0 else max(0, 100 - (std_dev / mean_rt * 100))
+        )
+
+        # 加权计算总体得分
+        weights = {
+            "response_time": 0.4,
+            "throughput": 0.3,
+            "error_rate": 0.2,
+            "stability": 0.1,
+        }
+
+        overall_score = (
+            rt_score * weights["response_time"]
+            + tp_score * weights["throughput"]
+            + er_score * weights["error_rate"]
+            + stability_score * weights["stability"]
+        )
+
+        # 转换为等级
+        overall_grade = self._score_to_grade(overall_score)
+
+        return {
+            "response_time_score": rt_score,
+            "throughput_score": tp_score,
+            "error_rate_score": er_score,
+            "stability_score": stability_score,
+            "overall_score": round(overall_score, 2),
+            "grade": overall_grade,
+            "grade_description": self._get_grade_description(overall_grade),
+        }
+
+    def _grade_to_score(self, grade: str) -> float:
+        """等级转换为分数"""
+        grade_map = {"A": 90, "B": 75, "C": 60, "D": 40}
+        return grade_map.get(grade, 40)
+
+    def _score_to_grade(self, score: float) -> str:
+        """分数转换为等级"""
+        if score >= 85:
+            return "A"
+        elif score >= 70:
+            return "B"
+        elif score >= 55:
+            return "C"
+        else:
+            return "D"
+
+    def _get_grade_description(self, grade: str) -> str:
+        """获取等级描述"""
+        descriptions = {
+            "A": "优秀 - 性能表现出色，系统运行稳定",
+            "B": "良好 - 性能表现较好，有小幅优化空间",
+            "C": "一般 - 性能基本满足要求，建议进行优化",
+            "D": "较差 - 性能存在明显问题，需要立即优化",
+        }
+        return descriptions.get(grade, "未知")
+
+    def _generate_recommendations(self, analysis_result: Dict) -> List[str]:
+        """生成优化建议"""
+        recommendations = []
+
+        # 响应时间建议
+        rt_grade = analysis_result["response_time"].get("performance_grade", "D")
+        if rt_grade in ["C", "D"]:
+            recommendations.append(
+                "响应时间较高，建议检查应用性能瓶颈，考虑缓存优化或代码优化"
+            )
+
+        # 吞吐量建议
+        tp_grade = analysis_result["throughput"].get("performance_grade", "D")
+        if tp_grade in ["C", "D"]:
+            recommendations.append(
+                "吞吐量偏低，建议检查系统资源使用情况，考虑扩容或性能调优"
+            )
+
+        # 错误率建议
+        er_grade = analysis_result["error_analysis"].get("performance_grade", "D")
+        if er_grade in ["C", "D"]:
+            recommendations.append("错误率较高，建议检查应用日志，修复系统稳定性问题")
+
+        # 稳定性建议
+        stability_score = analysis_result["performance_grade"].get("stability_score", 0)
+        if stability_score < 70:
+            recommendations.append("响应时间波动较大，建议检查系统负载均衡和资源配置")
+
+        if not recommendations:
+            recommendations.append("系统性能表现良好，建议持续监控和定期优化")
+
+        return recommendations
 
     def _grade_response_time(self, analysis: Dict) -> str:
         """响应时间评分"""

@@ -21,10 +21,170 @@ from src.utils.log_moudle import logger
 class DataGenerator:
     """测试数据生成器"""
 
-    def __init__(self, locale: str = "zh_CN"):
+    def __init__(self, locale: str = "zh_CN", seed: Optional[int] = None):
         self.faker = Faker(locale)
+        if seed:
+            self.faker.seed_instance(seed)
+        self.locale = locale
         self.generators = {}
         self._register_default_generators()
+
+    # API方法 - 符合文档规范
+    def generate_name(self, gender: Optional[str] = None) -> str:
+        """生成姓名"""
+        if gender == "male":
+            return self.faker.name_male()
+        elif gender == "female":
+            return self.faker.name_female()
+        return self.faker.name()
+
+    def generate_email(self, domain: Optional[str] = None) -> str:
+        """生成邮箱地址"""
+        if domain:
+            username = self.faker.user_name()
+            return f"{username}@{domain}"
+        return self.faker.email()
+
+    def generate_phone_number(self, region: str = "CN") -> str:
+        """生成手机号码"""
+        if region == "CN":
+            return self.faker.phone_number()
+        elif region == "US":
+            return self.faker.numerify("+1-###-###-####")
+        return self.faker.phone_number()
+
+    def generate_address(self, include_country: bool = False) -> Dict[str, str]:
+        """生成地址信息"""
+        address = {
+            "province": self.faker.province(),
+            "city": self.faker.city(),
+            "district": self.faker.district(),
+            "street": self.faker.street_address(),
+            "postal_code": self.faker.postcode(),
+        }
+        if include_country:
+            address["country"] = self.faker.country()
+        return address
+
+    def generate_integer(self, min_value: int = 0, max_value: int = 100) -> int:
+        """生成整数"""
+        return random.randint(min_value, max_value)
+
+    def generate_float(
+        self, min_value: float = 0.0, max_value: float = 100.0, precision: int = 2
+    ) -> float:
+        """生成浮点数"""
+        value = random.uniform(min_value, max_value)
+        return round(value, precision)
+
+    def generate_price(
+        self, min_price: float = 1.0, max_price: float = 1000.0, currency: str = "CNY"
+    ) -> Dict[str, Any]:
+        """生成价格信息"""
+        amount = round(random.uniform(min_price, max_price), 2)
+        currency_symbols = {"CNY": "¥", "USD": "$", "EUR": "€", "JPY": "¥"}
+        symbol = currency_symbols.get(currency, currency)
+
+        return {
+            "amount": amount,
+            "currency": currency,
+            "formatted": f"{symbol}{amount}",
+        }
+
+    def generate_text(
+        self, min_length: int = 10, max_length: int = 100, text_type: str = "sentence"
+    ) -> str:
+        """生成文本内容"""
+        if text_type == "word":
+            words_count = max(1, min_length // 5)  # 假设平均每个词5个字符
+            return " ".join(self.faker.words(nb=words_count))
+        elif text_type == "paragraph":
+            return self.faker.paragraph(nb_sentences=3)
+        else:  # sentence
+            return self.faker.sentence(nb_words=random.randint(5, 15))
+
+    def generate_username(self, min_length: int = 6, max_length: int = 20) -> str:
+        """生成用户名"""
+        base_username = self.faker.user_name()
+        if len(base_username) < min_length:
+            base_username += str(random.randint(100, 999))
+        if len(base_username) > max_length:
+            base_username = base_username[:max_length]
+        return base_username
+
+    def generate_datetime(
+        self,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        format_str: str = "%Y-%m-%d %H:%M:%S",
+    ) -> str:
+        """生成日期时间"""
+        start = (
+            datetime.strptime(start_date, "%Y-%m-%d")
+            if start_date
+            else datetime.now() - timedelta(days=365)
+        )
+        end = datetime.strptime(end_date, "%Y-%m-%d") if end_date else datetime.now()
+
+        random_date = self.faker.date_time_between(start_date=start, end_date=end)
+        return random_date.strftime(format_str)
+
+    def generate_timestamp(
+        self, start_timestamp: Optional[int] = None, end_timestamp: Optional[int] = None
+    ) -> int:
+        """生成时间戳"""
+        now = int(datetime.now().timestamp())
+        start = start_timestamp or (now - 86400 * 365)  # 1年前
+        end = end_timestamp or now
+
+        return random.randint(start, end)
+
+    def generate_user_profile(self, include_avatar: bool = True) -> Dict[str, Any]:
+        """生成用户资料"""
+        user_id = f"user_{random.randint(100000, 999999)}"
+        profile = {
+            "id": user_id,
+            "username": self.generate_username(),
+            "name": self.generate_name(),
+            "email": self.generate_email(),
+            "phone": self.generate_phone_number(),
+            "age": self.generate_integer(18, 65),
+            "gender": random.choice(["male", "female"]),
+            "bio": self.generate_text(20, 100, "sentence"),
+            "created_at": self.generate_datetime(),
+        }
+
+        if include_avatar:
+            profile["avatar"] = f"https://example.com/avatar/{user_id}.jpg"
+
+        return profile
+
+    def generate_product_info(self, category: Optional[str] = None) -> Dict[str, Any]:
+        """生成商品信息"""
+        categories = (
+            ["electronics", "clothing", "books", "home", "sports"]
+            if not category
+            else [category]
+        )
+        selected_category = random.choice(categories)
+
+        product_id = f"prod_{random.randint(100000, 999999)}"
+
+        return {
+            "id": product_id,
+            "name": self.faker.catch_phrase(),
+            "category": selected_category,
+            "price": self.generate_float(10.0, 2000.0, 2),
+            "description": self.generate_text(50, 200, "sentence"),
+            "brand": self.faker.company(),
+            "model": f"{self.faker.word().upper()}-{random.randint(100, 999)}",
+            "sku": f"{self.faker.lexify('??').upper()}-{product_id[-6:]}",
+            "stock": self.generate_integer(0, 200),
+            "images": [
+                f"https://example.com/img/{product_id}_{i}.jpg" for i in range(1, 4)
+            ],
+            "created_at": self.generate_datetime(),
+        }
 
     def register_generator(self, name: str, generator_func: Callable):
         """注册自定义数据生成器"""

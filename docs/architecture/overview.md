@@ -455,26 +455,6 @@ conf/
 - 高可用要求
 - 性能要求高
 
-# 云原生部署
-- 容器化部署
-- Kubernetes编排
-- 弹性伸缩
-- 服务网格
-```
-
-### 2. 容器化架构
-
-```dockerfile
-# 多阶段构建
-FROM python:3.9-slim as builder
-# 构建阶段
-
-FROM python:3.9-slim as runtime
-# 运行阶段
-
-# 健康检查
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:8089/health || exit 1
 ```
 
 ## 📈 监控架构
@@ -541,9 +521,8 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 
 # v3.0 - 未来版本
 - AI驱动的性能分析
-- 云原生架构
-- 微服务化
 - 智能化运维
+- 更丰富的分析算法
 ```
 
 ### 2. 技术债务管理

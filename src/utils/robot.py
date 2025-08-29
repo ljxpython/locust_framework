@@ -7,8 +7,8 @@
 import json
 import smtplib
 from abc import ABC, abstractmethod
-from email.mime.multipart import MimeMultipart
-from email.mime.text import MimeText
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from typing import Dict, List, Optional
 
 import requests
@@ -177,16 +177,16 @@ class EmailNotification(NotificationChannel):
 
         try:
             # 创建邮件对象
-            msg = MimeMultipart()
+            msg = MIMEMultipart()
             msg["From"] = self.username
             msg["To"] = ", ".join(to_emails)
             msg["Subject"] = subject
 
             # 添加邮件正文
             if kwargs.get("html", False):
-                msg.attach(MimeText(message, "html", "utf-8"))
+                msg.attach(MIMEText(message, "html", "utf-8"))
             else:
-                msg.attach(MimeText(message, "plain", "utf-8"))
+                msg.attach(MIMEText(message, "plain", "utf-8"))
 
             # 连接SMTP服务器并发送
             with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
@@ -408,9 +408,9 @@ class CustomRobotMessage(object):
         self.data_format["card"]["elements"].append(link_style)
 
 
-robot = CustomRobotMessage(url=custom_robot_url, data_format=data_format)
-
-
 if __name__ == "__main__":
-
+    # 示例代码 - 仅在直接运行时执行
+    # custom_robot_url = "your_robot_webhook_url_here"
+    # data_format = {"your": "format"}
+    # robot = CustomRobotMessage(url=custom_robot_url, data_format=data_format)
     pass
