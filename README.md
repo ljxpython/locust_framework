@@ -48,7 +48,7 @@
 - **场景编排** - 多阶段负载组合
 
 ### 🔗 **平台集成**
-- **第三方集成** - 支持嵌入测试平台(PS:已经嵌入到个人开发的[测试平台](https://www.coder-ljx.cn:7524/user/login))
+- **第三方集成** - 支持嵌入测试平台(PS:已经嵌入到个人开发的[测试平台](https://www.coder-ljx.cn:7524/user/login) test/test)
 - **API接口** - 完整的REST API
 
 ## 🚀 快速开始

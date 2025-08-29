@@ -48,7 +48,7 @@ pip install openpyxl>=3.0.0      # Excel支持
 
 ```bash
 # 克隆项目
-git clone https://github.com/your-repo/locust_framework.git
+git clone git@github.com:ljxpython/locust_framework.git
 cd locust_framework
 
 # 创建虚拟环境
@@ -64,18 +64,7 @@ pip install -r requirements.txt
 pip install -r requirements-dev.txt
 ```
 
-### 方式三：使用Docker
-
-```bash
-# 拉取镜像
-docker pull locust-framework:latest
-
-# 运行容器
-docker run -it --rm \
-  -p 8089:8089 \
-  -v $(pwd):/workspace \
-  locust-framework:latest
-```
+###
 
 ## 依赖说明
 

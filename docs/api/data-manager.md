@@ -656,4 +656,3 @@ class EnhancedDataProvider(DataProvider):
 - [性能分析API](analysis.md) - 性能分析模块API
 - [监控告警API](monitoring.md) - 监控告警模块API
 - [插件接口API](plugins.md) - 插件开发接口
-- [数据配置](../configuration/data-config.md) - 数据管理配置
